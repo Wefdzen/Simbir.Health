@@ -16,12 +16,12 @@ type TokensCouple struct {
 	RefreshToken string
 }
 
-func GenerateTokensCouple(uidUser, origRole string) TokensCouple {
+func GenerateTokensCouple(uidUser string, origRoles []string) TokensCouple {
 	//create JWT tokens
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        uidUser,                                 //id from bd
 		"liveToken": time.Now().Add(time.Minute * 15).Unix(), // 15 min Я знаю про exp
-		"role":      origRole,                                // по умол. user а уже ост с помощью админов
+		"roles":     origRoles,                               // по умол. user а уже ост с помощью админов
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("secret_key")))
@@ -76,4 +76,21 @@ func CheckRefreshToken(c *gin.Context, RefreshTokenOutUser, OrigRefreshToken str
 	}
 
 	return true //refresh token success!
+}
+
+func GetIDFromToken(c *gin.Context, accessToken string) string {
+	//проверять уже бесмысленно он до этого прошео middleware но получить claims надо
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("secret_key")), nil
+	})
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		return claims["id"].(string)
+	}
+	return "-1"
 }

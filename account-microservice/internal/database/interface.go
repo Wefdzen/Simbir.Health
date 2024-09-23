@@ -5,8 +5,12 @@ type UserRepository interface {
 	CheckPasswordUser(user *User) bool
 	GetIDByUserName(user *User) uint
 	GetRefreshTokenUser(idUser string) string
-	GetRoleUser(idUser string) string
+	GetRolesUser(idUser string) []string
 	SetRefreshToken(idUser, refreshToken string)
+	GetAllInfoByIDUser(idUser string) User
+	UpdateDataAccountUser(idUser string, user User)
+	GetAllInfoAllAccountsAdmin(from, count int) []User
+	CreateAccountByAdmin(user *User)
 }
 
 // registration a new user in db by default role with "user"
@@ -26,10 +30,26 @@ func GetRefToken(repo UserRepository, idUser string) string {
 	return repo.GetRefreshTokenUser(idUser)
 }
 
-func GetRole(repo UserRepository, idUser string) string {
-	return repo.GetRoleUser(idUser)
+func GetRoles(repo UserRepository, idUser string) []string {
+	return repo.GetRolesUser(idUser)
 }
 
 func SetRefToken(repo UserRepository, idUser, refreshToken string) {
 	repo.SetRefreshToken(idUser, refreshToken)
+}
+
+func GetAllInfoByID(repo UserRepository, idUser string) User {
+	return repo.GetAllInfoByIDUser(idUser)
+}
+
+func UpdateDataAccount(repo UserRepository, idUser string, user User) {
+	repo.UpdateDataAccountUser(idUser, user)
+}
+
+func GetAllInfoAllAccounts(repo UserRepository, from, count int) []User {
+	return repo.GetAllInfoAllAccountsAdmin(from, count)
+}
+
+func NewAccountByAdmin(repo UserRepository, user *User) {
+	repo.CreateAccountByAdmin(user)
 }

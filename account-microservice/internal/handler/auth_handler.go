@@ -23,7 +23,7 @@ func SignUp() gin.HandlerFunc {
 		jsonInput.Password, _ = service.HashPassword(tmpPassword)
 
 		//connect to db
-		userRepo := database.NewGormUserRepositroy()
+		userRepo := database.NewGormUserRepository()
 		database.RegisterUser(userRepo, &jsonInput)
 
 		c.JSON(http.StatusOK, gin.H{
@@ -38,7 +38,7 @@ func SignIn() gin.HandlerFunc {
 		if err := c.BindJSON(&jsonInput); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
-		userRepo := database.NewGormUserRepositroy()
+		userRepo := database.NewGormUserRepository()
 		if ok := database.CheckPassword(userRepo, &jsonInput); !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "incorrect password or username",
@@ -49,7 +49,7 @@ func SignIn() gin.HandlerFunc {
 		idUser := database.GetID(userRepo, &jsonInput)
 		userId := fmt.Sprintf("%v", idUser) // Преобразование id в строку
 		//TODO create a func for this потом же для api/Auth/refresh
-		tokens := service.GenerateTokensCouple(userId, "user")
+		tokens := service.GenerateTokensCouple(userId, []string{"user"})
 		//set to database a refreshToken
 		database.SetRefToken(userRepo, userId, tokens.RefreshToken)
 		//Set in cookie
@@ -78,23 +78,14 @@ type AccessRequest struct {
 
 func ValidateToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var jsonInput AccessRequest
-		if err := c.BindJSON(&jsonInput); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		accessToken, err := c.Cookie("accessToken")
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
-		}
-		//если чел не передал token беру из cookie
-		var err error
-		if jsonInput.AccessToken == "" {
-			jsonInput.AccessToken, err = c.Cookie("accessToken")
-			if err != nil {
-				c.AbortWithStatus(http.StatusUnauthorized)
-				return
-			}
 		}
 
 		//parsing token
-		token, err := jwt.Parse(jsonInput.AccessToken, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 			// Проверяем метод подписи
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -172,7 +163,7 @@ func Refresh() gin.HandlerFunc {
 				return
 			} else {
 				//get ref from db
-				userRepo := database.NewGormUserRepositroy()
+				userRepo := database.NewGormUserRepository()
 				userId := fmt.Sprintf("%v", claims["id"]) // Преобразование id в строку
 				origRefTok := database.GetRefToken(userRepo, userId)
 				//checkRefresh from db and his exp
@@ -182,8 +173,8 @@ func Refresh() gin.HandlerFunc {
 				} else {
 					//TODO Создать новый access token and refresh и отправить его в cookie
 					//get role by id in db for regenerate tokens
-					origRole := database.GetRole(userRepo, userId)
-					tokens := service.GenerateTokensCouple(userId, origRole)
+					origRoles := database.GetRoles(userRepo, userId)
+					tokens := service.GenerateTokensCouple(userId, origRoles)
 					//set new ref token to db
 					database.SetRefToken(userRepo, userId, tokens.RefreshToken)
 					//set a new cookie

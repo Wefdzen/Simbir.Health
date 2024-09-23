@@ -21,5 +21,15 @@ func Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 	db.AutoMigrate(&User{}) // если такой структуры небыло migrate will be create a new table
+	//analog
+	// 	create table users(
+	// 	id serial primary key,
+	// 	last_name text,
+	// 	first_name text,
+	// 	user_name text,
+	// 	password text,
+	// 	roles text[],
+	// 	refresh_token text
+	// );
 	return db, nil
 }
