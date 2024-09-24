@@ -11,6 +11,8 @@ type UserRepository interface {
 	UpdateDataAccountUser(idUser string, user User)
 	GetAllInfoAllAccountsAdmin(from, count int) []User
 	CreateAccountByAdmin(user *User)
+	UpdateDataAccountByAdmin(idUser string, user User)
+	SoftDeleteAccountByAdmin(idUser string)
 }
 
 // registration a new user in db by default role with "user"
@@ -52,4 +54,10 @@ func GetAllInfoAllAccounts(repo UserRepository, from, count int) []User {
 
 func NewAccountByAdmin(repo UserRepository, user *User) {
 	repo.CreateAccountByAdmin(user)
+}
+func UpdateDataAccountAdmin(repo UserRepository, idUser string, user User) {
+	repo.UpdateDataAccountByAdmin(idUser, user)
+}
+func SoftDeleteAccountAdmin(repo UserRepository, idUser string) {
+	repo.SoftDeleteAccountByAdmin(idUser)
 }

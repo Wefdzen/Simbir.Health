@@ -3,9 +3,11 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func Authentication() gin.HandlerFunc {
@@ -47,10 +49,25 @@ func Authentication() gin.HandlerFunc {
 	}
 }
 
-// will be after middleware Authe
-func Authorization() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// незнаю либо просто брать из accessToken либо брать(вроде сверка с бд ролей не надо)
-		c.Next()
+// will be after middleware Authentication
+func Authorization(c *gin.Context) {
+	accessToken, _ := c.Cookie("accessToken")
+
+	//parsing token // err не надо до этого уже проверенно
+	token, _ := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		// Проверяем метод подписи
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		// Возвращаем секретный ключ
+		return []byte(os.Getenv("secret_key")), nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		roles := claims["roles"]
+		fmt.Println(roles)
+		r := fmt.Sprintf("%v", roles)
+		fmt.Println("R:", r)
 	}
+	c.Next()
 }

@@ -75,3 +75,18 @@ func (r *GormUserRepository) GetAllInfoAllAccountsAdmin(from, count int) []User 
 func (r *GormUserRepository) CreateAccountByAdmin(user *User) {
 	r.db.Create(&User{LastName: user.LastName, FirstName: user.FirstName, UserName: user.UserName, Password: user.Password, Roles: user.Roles, RefreshToken: ""})
 }
+
+// func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user *User) {
+// 	r.db.Create(&User{LastName: user.LastName, FirstName: user.FirstName, UserName: user.UserName, Password: user.Password, Roles: user.Roles, RefreshToken: ""})
+// }
+
+func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user User) {
+	tmp, _ := service.HashPassword(user.Password)
+	user.Password = tmp
+	updates := map[string]interface{}{"last_name": user.LastName, "first_name": user.FirstName, "user_name": user.UserName, "password": user.Password, "roles": user.Roles}
+	r.db.Model(&User{}).Where("id = ?", idUser).Updates(updates)
+}
+
+func (r *GormUserRepository) SoftDeleteAccountByAdmin(idUser string) {
+	r.db.Where("id = ?", idUser).Delete(&User{})
+}

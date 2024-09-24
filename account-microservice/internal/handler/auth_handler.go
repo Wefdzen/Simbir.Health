@@ -48,8 +48,8 @@ func SignIn() gin.HandlerFunc {
 		//id of user from db for access jwt
 		idUser := database.GetID(userRepo, &jsonInput)
 		userId := fmt.Sprintf("%v", idUser) // Преобразование id в строку
-		//TODO create a func for this потом же для api/Auth/refresh
-		tokens := service.GenerateTokensCouple(userId, []string{"user"})
+		origRoles := database.GetRoles(userRepo, userId)
+		tokens := service.GenerateTokensCouple(userId, origRoles)
 		//set to database a refreshToken
 		database.SetRefToken(userRepo, userId, tokens.RefreshToken)
 		//Set in cookie
@@ -171,7 +171,6 @@ func Refresh() gin.HandlerFunc {
 					c.AbortWithStatus(http.StatusUnauthorized)
 					return
 				} else {
-					//TODO Создать новый access token and refresh и отправить его в cookie
 					//get role by id in db for regenerate tokens
 					origRoles := database.GetRoles(userRepo, userId)
 					tokens := service.GenerateTokensCouple(userId, origRoles)

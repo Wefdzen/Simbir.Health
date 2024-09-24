@@ -1,6 +1,9 @@
 package database
 
-import "github.com/lib/pq"
+import (
+	"github.com/lib/pq"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	ID           uint
@@ -10,4 +13,5 @@ type User struct {
 	Password     string         `json:"password"`
 	Roles        pq.StringArray `gorm:"type:text[]" json:"roles"` // admin, user, doctor, manager
 	RefreshToken string
+	Deleted      gorm.DeletedAt
 }
