@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"wefdzen/internal/service"
 
@@ -89,4 +90,24 @@ func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user User) 
 
 func (r *GormUserRepository) SoftDeleteAccountByAdmin(idUser string) {
 	r.db.Where("id = ?", idUser).Delete(&User{})
+}
+
+func (r *GormUserRepository) GetFullNameHowIsDoctors(from, count int, nameFilter string) []User {
+	var user []User
+	nameFilterC := fmt.Sprintf("%v%v%v", "%", nameFilter, "%")
+	// r.db.Where("last_name LIKE ? OR first_name LIKE ?", "%"+nameFilter+"%", "%"+nameFilter+"%").Where("roles ARRAY ?", "doctor").Limit(count).Offset(from).Find(&user)
+	r.db.Where("last_name LIKE ? OR first_name LIKE ?", nameFilterC, nameFilterC).
+		Where("roles @> ARRAY[?]", "doctor").
+		Limit(count).
+		Offset(from).
+		Find(&user)
+	return user
+}
+
+func (r *GormUserRepository) GetInfoByIDDoctor(idUser string) User {
+	var user User
+	r.db.Where("id = ?", idUser).
+		Where("roles @> ARRAY[?]", "doctor").
+		First(&user)
+	return user
 }

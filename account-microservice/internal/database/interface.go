@@ -13,6 +13,8 @@ type UserRepository interface {
 	CreateAccountByAdmin(user *User)
 	UpdateDataAccountByAdmin(idUser string, user User)
 	SoftDeleteAccountByAdmin(idUser string)
+	GetFullNameHowIsDoctors(from, count int, nameFilter string) []User
+	GetInfoByIDDoctor(idUser string) User
 }
 
 // registration a new user in db by default role with "user"
@@ -60,4 +62,11 @@ func UpdateDataAccountAdmin(repo UserRepository, idUser string, user User) {
 }
 func SoftDeleteAccountAdmin(repo UserRepository, idUser string) {
 	repo.SoftDeleteAccountByAdmin(idUser)
+}
+
+func GetFullNameHowDoctors(repo UserRepository, from, count int, nameFilter string) []User {
+	return repo.GetFullNameHowIsDoctors(from, count, nameFilter)
+}
+func GetInfoIDDoctor(repo UserRepository, idUser string) User {
+	return repo.GetInfoByIDDoctor(idUser)
 }
