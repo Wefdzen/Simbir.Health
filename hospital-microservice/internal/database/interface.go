@@ -1,11 +1,14 @@
 package database
 
+import "fmt"
+
 type UserRepository interface {
 	CreateHospitalAdmin(hospital *Hospital)
 	SoftDeleteHospitalByAdmin(idHospital string)
 	UpdateDataHospitalByAdmin(idHospital string, hospital *Hospital)
 	GetListHospitalsByUser(from, count int) []Hospital
 	GetInfoAboutHospitalByID(idHospital string) Hospital
+	CheckExistRoomHospitalID(room, idHospital string) bool
 }
 
 func CreateHospitalByAdmin(repo UserRepository, hospital *Hospital) {
@@ -26,4 +29,9 @@ func GetListHospitals(repo UserRepository, from, count int) []Hospital {
 
 func GetInfoHospitalByID(repo UserRepository, idHospital string) Hospital {
 	return repo.GetInfoAboutHospitalByID(idHospital)
+}
+
+func CheckExistRoomInHospitalID(repo UserRepository, room, idHospital string) bool {
+	fmt.Println("ROOOOOOM: ", room)
+	return repo.CheckExistRoomHospitalID(room, idHospital)
 }

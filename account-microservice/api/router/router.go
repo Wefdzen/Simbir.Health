@@ -36,6 +36,7 @@ func SetupRouter() *gin.Engine {
 	{
 		userDoctor.GET("/", handler.GetAllDoctors())     // get list of doctors
 		userDoctor.GET("/:id", handler.GetInforDoctor()) // get info about doctor
+		userDoctor.GET("/Exist", handler.CheckExistDoctor())
 	}
 
 	return r

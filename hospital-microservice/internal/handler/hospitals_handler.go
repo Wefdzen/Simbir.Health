@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -120,5 +121,27 @@ func SoftDeleteHospitalByAdmin() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})
+	}
+}
+
+func CheckExistRoomInHospital() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		room, err := c.Cookie("room")
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		fmt.Println("ROOOOOOOOOOOOOm: ", room)
+		idHospital, err := c.Cookie("idHospital")
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		userRepo := database.NewGormUserRepository()
+		hospitalWithRoomExist := database.CheckExistRoomInHospitalID(userRepo, room, idHospital)
+		if !hospitalWithRoomExist {
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
+		c.AbortWithStatus(http.StatusOK)
 	}
 }

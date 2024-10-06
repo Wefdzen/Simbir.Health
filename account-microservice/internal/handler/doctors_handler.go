@@ -42,3 +42,19 @@ func GetInforDoctor() gin.HandlerFunc {
 		c.JSON(http.StatusOK, doctor)
 	}
 }
+
+func CheckExistDoctor() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idDoctor, err := c.Cookie("idDoctor")
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		userRepo := database.NewGormUserRepository()
+		doctorExist := database.CheckExistDoctorID(userRepo, idDoctor)
+		if !doctorExist {
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
+		c.AbortWithStatus(http.StatusOK)
+	}
+}

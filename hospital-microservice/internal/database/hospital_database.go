@@ -42,3 +42,11 @@ func (r *GormUserRepository) GetInfoAboutHospitalByID(idHospital string) Hospita
 	r.db.Where("id = ?", idHospital).First(&hospital)
 	return hospital
 }
+
+func (r *GormUserRepository) CheckExistRoomHospitalID(room, idHospital string) bool {
+	var user Hospital
+	r.db.Where("id = ?", idHospital).
+		Where("rooms @> ARRAY[?]", room).
+		First(&user)
+	return len(user.Rooms) != 0 // если равен нулю значит запись с такими критериями не было найдено
+}

@@ -77,10 +77,6 @@ func (r *GormUserRepository) CreateAccountByAdmin(user *User) {
 	r.db.Create(&User{LastName: user.LastName, FirstName: user.FirstName, UserName: user.UserName, Password: user.Password, Roles: user.Roles, RefreshToken: ""})
 }
 
-// func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user *User) {
-// 	r.db.Create(&User{LastName: user.LastName, FirstName: user.FirstName, UserName: user.UserName, Password: user.Password, Roles: user.Roles, RefreshToken: ""})
-// }
-
 func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user User) {
 	tmp, _ := service.HashPassword(user.Password)
 	user.Password = tmp
@@ -110,4 +106,12 @@ func (r *GormUserRepository) GetInfoByIDDoctor(idUser string) User {
 		Where("roles @> ARRAY[?]", "doctor").
 		First(&user)
 	return user
+}
+
+func (r *GormUserRepository) CheckExistDoctorByID(idDoctor string) bool {
+	var user User
+	r.db.Where("id = ?", idDoctor).
+		Where("roles @> ARRAY[?]", "doctor").
+		First(&user)
+	return len(user.Roles) != 0 // если равен нулю значит запись с такими критериями не было найдено
 }

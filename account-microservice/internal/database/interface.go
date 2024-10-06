@@ -15,6 +15,7 @@ type UserRepository interface {
 	SoftDeleteAccountByAdmin(idUser string)
 	GetFullNameHowIsDoctors(from, count int, nameFilter string) []User
 	GetInfoByIDDoctor(idUser string) User
+	CheckExistDoctorByID(idDoctor string) bool
 }
 
 // registration a new user in db by default role with "user"
@@ -69,4 +70,8 @@ func GetFullNameHowDoctors(repo UserRepository, from, count int, nameFilter stri
 }
 func GetInfoIDDoctor(repo UserRepository, idUser string) User {
 	return repo.GetInfoByIDDoctor(idUser)
+}
+
+func CheckExistDoctorID(repo UserRepository, idDoctor string) bool {
+	return repo.CheckExistDoctorByID(idDoctor)
 }

@@ -19,6 +19,7 @@ func SetupRouter() *gin.Engine {
 		hospitals.POST("/", handler.CreateNewHospitalByAdmin())       // for admin create hospital
 		hospitals.PUT("/:id", handler.UpdateHospitalByAdmin())        //for admin update info about hospit by id
 		hospitals.DELETE("/:id", handler.SoftDeleteHospitalByAdmin()) //for admin SOFT delete hospit by id
+		hospitals.GET("/Exist", handler.CheckExistRoomInHospital())
 	}
 
 	return r
