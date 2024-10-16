@@ -22,7 +22,7 @@ func SetupRouter() *gin.Engine {
 		timetable.GET("/Doctor/:id", handler.GetTimetableByIdDoctor())
 		timetable.GET("/Hospital/:id/Room/:room", handler.GetTimetableInHospitalRoom())
 		timetable.GET("/:id/Appointments", handler.GetFreeAppointments())
-		timetable.POST(":id/Appointments", handler.RecordingToAppointment())
+		timetable.POST("/:id/Appointments", handler.RecordingToAppointment())
 	}
 
 	timetable2 := r.Group("/api/Appointment")

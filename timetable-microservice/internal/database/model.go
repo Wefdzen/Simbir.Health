@@ -2,7 +2,7 @@ package database
 
 import "time"
 
-//delete will be a not soft
+// delete will be a not soft
 type Timetable struct {
 	ID         uint
 	HospitalId int       `json:"hospitalId"`
@@ -15,7 +15,11 @@ type Timetable struct {
 // talon
 type Appointment struct {
 	ID          uint
-	TimetableId uint      //uid of расписания
-	ClientId    uint      //чел который записался
+	TimetableId int       //uid of расписания
+	ClientId    int       //чел который записался
 	Time        time.Time // время записи после этого оно не доступно
+}
+
+type RequestAppointmentByTime struct {
+	Time string `json:"time"`
 }

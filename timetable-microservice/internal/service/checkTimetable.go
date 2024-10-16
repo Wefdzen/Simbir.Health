@@ -21,6 +21,19 @@ func CheckMultiplyOfTime(timeFrom, timeTo time.Time, c *gin.Context) bool {
 	return true
 }
 
+func CheckMultiplyOfTimeOne(time time.Time, c *gin.Context) {
+	// Проверяем, кратно ли время 30 минутам для обоих значений (timeFrom и timeTo)
+	if time.Minute()%30 != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "the time should be a multiple of 30 minutes"})
+		return
+	}
+	// Проверяем, что секунды равны 0 у обоих значений
+	if time.Second() != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "the second should be equal to 0"})
+		return
+	}
+}
+
 func CheckTimeDifference(timeFrom, timeTo time.Time, c *gin.Context) bool {
 	duration := timeTo.Sub(timeFrom)
 	// Проверяем, что время "to" больше "from"

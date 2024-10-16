@@ -16,10 +16,12 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
 			c.AbortWithStatus(http.StatusUnauthorized)
+			fmt.Println("here error")
 			return
 		}
+		fmt.Println("дошло до сюда 1")
 		//get data from request
 		var jsonInput database.Timetable
 		if err := c.BindJSON(&jsonInput); err != nil {
@@ -31,12 +33,13 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-
+		fmt.Println("дошло до сюда 2")
 		existRoomInHospital, err := service.CheckExistRoomInHospital(jsonInput.Room, strconv.Itoa(jsonInput.HospitalId), c)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+		fmt.Println("дошло до сюда 3")
 
 		//Checking paramaters time in body from req
 		service.CheckMultiplyOfTime(jsonInput.From, jsonInput.To, c)
@@ -48,6 +51,7 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusOK) //mb change
 			return
 		}
+		fmt.Println("дошло до сюда 3")
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 }
@@ -55,7 +59,7 @@ func UpdateRecordInTimetable() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -99,7 +103,7 @@ func DeleteRecordFromTimetable() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -116,7 +120,7 @@ func DeleteTimetableForDoctor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -131,7 +135,7 @@ func DeleteTimetableForHospital() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -171,6 +175,27 @@ func GetTimetableByIdHospital() gin.HandlerFunc {
 
 func GetTimetableByIdDoctor() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		idDoctor := c.Param("id")
+
+		//get data form query
+		from := c.Query("from")
+		to := c.Query("to")
+		layout := "2006-01-02T15:04:05Z07:00"
+		fromTime, err := time.Parse(layout, from)
+		if err != nil {
+			fmt.Println("error 1", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		toTime, err := time.Parse(layout, to)
+		if err != nil {
+			fmt.Println("error 2", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		userRepo := database.NewGormUserRepository()
+		timeTables := database.GetTimetableByIdDoctorInSegment(userRepo, idDoctor, fromTime, toTime)
+		c.JSON(http.StatusOK, timeTables)
 	}
 }
 
@@ -178,9 +203,32 @@ func GetTimetableInHospitalRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//only for admin or manager or doctor
 		roles := service.Authorization(c)
-		if !strings.Contains(roles, "admin") || !strings.Contains(roles, "manager") || !strings.Contains(roles, "doctor") {
+		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") && !strings.Contains(roles, "doctor") {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
+
+		idHospital := c.Param("id")
+		room := c.Param("room")
+
+		//get data form query
+		from := c.Query("from")
+		to := c.Query("to")
+		layout := "2006-01-02T15:04:05Z07:00"
+		fromTime, err := time.Parse(layout, from)
+		if err != nil {
+			fmt.Println("error 1", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		toTime, err := time.Parse(layout, to)
+		if err != nil {
+			fmt.Println("error 2", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		userRepo := database.NewGormUserRepository()
+		timeTables := database.GetTimetableByIdHospitalAndRoomForAMD(userRepo, idHospital, room, fromTime, toTime)
+		c.JSON(http.StatusOK, timeTables)
 	}
 }

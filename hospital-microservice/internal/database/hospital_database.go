@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
 	"gorm.io/gorm"
@@ -45,6 +46,7 @@ func (r *GormUserRepository) GetInfoAboutHospitalByID(idHospital string) Hospita
 
 func (r *GormUserRepository) CheckExistRoomHospitalID(room, idHospital string) bool {
 	var user Hospital
+	fmt.Println(room, "<-room, idHosptil->", idHospital)
 	r.db.Where("id = ?", idHospital).
 		Where("rooms @> ARRAY[?]", room).
 		First(&user)

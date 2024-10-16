@@ -1,6 +1,7 @@
 package router
 
 import (
+	"wefdzen/internal/handler"
 	"wefdzen/internal/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -12,10 +13,10 @@ func SetupRouter() *gin.Engine {
 	timetable := r.Group("/api/History")
 	timetable.Use(middleware.Authentication())
 	{
-		timetable.GET("/Account/:id") // for people with his id in jwt
-		timetable.GET("/:id")
-		timetable.POST("/")
-		timetable.PUT(":id")
+		timetable.GET("/Account/:id", handler.GetHistoryOfVisits()) // for people with his id in jwt
+		timetable.GET("/:id", handler.GetHistory())
+		timetable.POST("/", handler.CreateNewHistoryVisit())
+		timetable.PUT("/:id", handler.UpdateNewHistoryVisit())
 	}
 
 	return r
