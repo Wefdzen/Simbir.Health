@@ -19,7 +19,7 @@ type ConfigDatabase struct {
 func LaunchConfigFile() ConfigDatabase {
 	var cfg ConfigDatabase
 
-	err := cleanenv.ReadConfig("config.yml", &cfg)
+	err := cleanenv.ReadConfig("/app/timetable-microservice/config.yml", &cfg)
 	if err != nil {
 		log.Fatal("error: ", err)
 	}

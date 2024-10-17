@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load() //by default .env
+	err := godotenv.Load("/app/account-microservice/.env") //by default .env
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
