@@ -30,9 +30,5 @@ RUN cd document-microservice && go build -o /app/document-microservice/document-
 RUN cd hospital-microservice && go build -o /app/hospital-microservice/hospital-microservice ./cmd/main.go
 RUN cd timetable-microservice && go build -o /app/timetable-microservice/timetable-microservice ./cmd/main.go
 
-#set config config все равно одинаковый 
-#RUN cp /app/account-microservice/.env /app/bin/.env
-#RUN cp /app/account-microservice/config.yml /app/bin/config.yml
-RUN ls -la /app/account-microservice/
 # Запуск всех микросервисов одновременно 
 CMD ["sh", "-c", "/app/account-microservice/account-microservice & /app/hospital-microservice/hospital-microservice & /app/timetable-microservice/timetable-microservice & /app/document-microservice/document-microservice"]

@@ -1,0 +1,239 @@
+openapi: 3.0.0
+info:
+    title: Timetable Microservice API
+    description: API for managing timetable and appointments in the timetable microservice.
+    version: 1.0.0
+servers:
+    - url: http://localhost:8082
+      description: Local server
+
+paths:
+    /api/Timetable:
+        post:
+            summary: Create a new timetable record
+            description: Creates a new timetable record for a doctor.
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Timetable"
+            responses:
+                "200":
+                    description: Timetable record created successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized.
+
+    /api/Timetable/{id}:
+        put:
+            summary: Update an existing timetable record
+            description: Updates an existing timetable record by its ID.
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the timetable record to update.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Timetable"
+            responses:
+                "200":
+                    description: Timetable record updated successfully.
+                "400":
+                    description: Invalid input or timetable has appointments.
+                "401":
+                    description: Unauthorized.
+
+        delete:
+            summary: Delete a timetable record
+            description: Deletes a timetable record by its ID.
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the timetable record to delete.
+            responses:
+                "200":
+                    description: Timetable record deleted successfully.
+                "401":
+                    description: Unauthorized.
+
+    /api/Timetable/Doctor/{id}:
+        get:
+            summary: Get timetable by doctor ID
+            description: Retrieves the timetable for a specific doctor.
+            tags:
+                - Timetable
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the doctor.
+                - name: from
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Start date-time of the query period.
+                - name: to
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      format: date-time
+                  description: End date-time of the query period.
+            responses:
+                "200":
+                    description: Successful response with the doctor's timetable.
+                "400":
+                    description: Invalid date format.
+                "401":
+                    description: Unauthorized.
+
+        delete:
+            summary: Delete timetable records for a doctor
+            description: Deletes all timetable records associated with a specific doctor.
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the doctor.
+            responses:
+                "200":
+                    description: Timetable records for doctor deleted successfully.
+                "401":
+                    description: Unauthorized.
+
+    /api/Timetable/Hospital/{id}:
+        get:
+            summary: Get timetable by hospital ID
+            description: Retrieves the timetable for a specific hospital.
+            tags:
+                - Timetable
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+                - name: from
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Start date-time of the query period.
+                - name: to
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      format: date-time
+                  description: End date-time of the query period.
+            responses:
+                "200":
+                    description: Successful response with the hospital's timetable.
+                "400":
+                    description: Invalid date format.
+                "401":
+                    description: Unauthorized.
+
+        delete:
+            summary: Delete timetable records for a hospital
+            description: Deletes all timetable records associated with a specific hospital.
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+            responses:
+                "200":
+                    description: Timetable records for hospital deleted successfully.
+                "401":
+                    description: Unauthorized.
+
+components:
+    securitySchemes:
+        cookieAuth:
+            type: apiKey
+            in: cookie
+            name: accessToken
+    schemas:
+        Timetable:
+            type: object
+            properties:
+                ID:
+                    type: integer
+                    description: Unique identifier for the timetable entry.
+                HospitalId:
+                    type: integer
+                    description: ID of the hospital.
+                DoctorId:
+                    type: integer
+                    description: ID of the doctor.
+                From:
+                    type: string
+                    format: date-time
+                    description: Start time of the timetable entry.
+                To:
+                    type: string
+                    format: date-time
+                    description: End time of the timetable entry.
+                Room:
+                    type: string
+                    description: Room in which the timetable is scheduled.
+        Appointment:
+            type: object
+            properties:
+                ID:
+                    type: integer
+                    description: Unique identifier for the appointment.
+                TimetableId:
+                    type: integer
+                    description: ID of the related timetable entry.
+                ClientId:
+                    type: integer
+                    description: ID of the client who made the appointment.
+                Time:
+                    type: string
+                    format: date-time
+                    description: Scheduled time of the appointment.
+security:
+    - cookieAuth: []

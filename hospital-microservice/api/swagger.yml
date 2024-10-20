@@ -1,0 +1,234 @@
+openapi: 3.0.0
+info:
+    title: Hospital Microservice API
+    description: API for managing hospitals and their rooms in the hospital microservice.
+    version: 1.0.0
+servers:
+    - url: http://localhost:8081
+      description: Local server
+
+paths:
+    /api/Hospitals:
+        get:
+            summary: Get a list of hospitals
+            description: Retrieves a list of hospitals with pagination.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: from
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Offset for pagination.
+                - name: count
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Number of hospitals to retrieve.
+            responses:
+                "200":
+                    description: A list of hospitals.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/HospitalResponse"
+
+        post:
+            summary: Create a new hospital
+            description: Allows an admin to create a new hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Hospital"
+            responses:
+                "200":
+                    description: Hospital created successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized.
+
+    /api/Hospitals/{id}:
+        get:
+            summary: Get hospital by ID
+            description: Retrieves detailed information about a specific hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+            responses:
+                "200":
+                    description: Successful response with hospital details.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/HospitalResponse"
+                "404":
+                    description: Hospital not found.
+
+        put:
+            summary: Update hospital by ID
+            description: Allows an admin to update information about a specific hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital to update.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Hospital"
+            responses:
+                "200":
+                    description: Hospital updated successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized.
+
+        delete:
+            summary: Soft delete hospital by ID
+            description: Allows an admin to soft delete a specific hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital to delete.
+            responses:
+                "200":
+                    description: Hospital deleted successfully.
+                "401":
+                    description: Unauthorized.
+
+    /api/Hospitals/{id}/Rooms:
+        get:
+            summary: Get list of rooms in hospital by ID
+            description: Retrieves a list of rooms for a specific hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+            responses:
+                "200":
+                    description: A list of rooms in the hospital.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                "404":
+                    description: Hospital not found.
+
+    /api/Hospitals/Exist:
+        get:
+            summary: Check if a room exists in a hospital
+            description: Validates whether a room exists in the specified hospital.
+            tags:
+                - Hospitals
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: room
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the room.
+                - name: idHospital
+                  in: query
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+            responses:
+                "200":
+                    description: Room exists in the hospital.
+                "400":
+                    description: Bad request, invalid parameters.
+                "404":
+                    description: Room or hospital not found.
+
+components:
+    securitySchemes:
+        cookieAuth:
+            type: apiKey
+            in: cookie
+            name: accessToken
+
+    schemas:
+        Hospital:
+            type: object
+            properties:
+                Name:
+                    type: string
+                    description: Name of the hospital.
+                Address:
+                    type: string
+                    description: Address of the hospital.
+                ContactPhone:
+                    type: string
+                    description: Contact phone number for the hospital.
+                Rooms:
+                    type: array
+                    items:
+                        type: string
+                    description: List of rooms in the hospital.
+
+        HospitalResponse:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the hospital.
+                address:
+                    type: string
+                    description: Address of the hospital.
+                contactPhone:
+                    type: string
+                    description: Contact phone number for the hospital.
+                rooms:
+                    type: array
+                    items:
+                        type: string
+                    description: List of rooms in the hospital.

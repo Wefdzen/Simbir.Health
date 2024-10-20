@@ -1,4 +1,4 @@
-PG_host: "localhost"
+PG_host: "postgres"
 PG_port: "5432"
 PG_user: "postgres"
 PG_db_name: "simbirSoft"
