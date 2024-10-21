@@ -1,14 +1,22 @@
 package router
 
 import (
+	"net/http"
 	"wefdzen/internal/handler"
 	"wefdzen/internal/middleware"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	r.StaticFS("/swagger-docs", http.Dir("/app/account-microservice/api/docs"))
+	url := ginSwagger.URL("/swagger-docs/swagger.yml")
+	//Account URL: http://localhost:8080/ui-swagger/index.html
+	r.GET("/ui-swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	userAuth := r.Group("/api/Authentication")
 	{

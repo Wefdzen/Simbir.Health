@@ -21,12 +21,7 @@ func Me() gin.HandlerFunc {
 		//end func
 		userRepo := database.NewGormUserRepository()
 		me := database.GetAllInfoByID(userRepo, idUser)
-		c.JSON(http.StatusOK, gin.H{
-			"lastName":  me.LastName,
-			"firstName": me.FirstName,
-			"username":  me.UserName,
-			"roles":     me.Roles,
-		})
+		c.JSON(http.StatusOK, me)
 	}
 }
 

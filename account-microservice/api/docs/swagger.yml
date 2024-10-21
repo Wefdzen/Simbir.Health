@@ -1,0 +1,425 @@
+openapi: 3.0.0
+info:
+    title: Account Microservice API
+    description: API for managing user accounts and authentication in the account microservice.
+    version: 1.0.0
+servers:
+    - url: http://localhost:8080
+      description: Local server
+
+paths:
+    /api/Authentication/SignUp:
+        post:
+            summary: Register a new user
+            description: Allows a new user to sign up.
+            tags:
+                - Authentication
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserSignUp"
+            responses:
+                "200":
+                    description: User registered successfully.
+                "400":
+                    description: Invalid input.
+
+    /api/Authentication/SignIn:
+        post:
+            summary: User login
+            description: Allows a user to sign in.
+            tags:
+                - Authentication
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserSignIn"
+            responses:
+                "200":
+                    description: User signed in successfully.
+                "401":
+                    description: Unauthorized - incorrect username or password.
+
+    /api/Authentication/SignOut:
+        put:
+            summary: User logout
+            description: Allows an authenticated user to sign out.
+            tags:
+                - Authentication
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: User signed out successfully.
+                "401":
+                    description: Unauthorized - user not logged in.
+
+    /api/Authentication/Validate:
+        get:
+            summary: Validate access token
+            description: Validates the access token to check its status.
+            tags:
+                - Authentication
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: Token is valid.
+                "401":
+                    description: Unauthorized - invalid or expired token.
+
+    /api/Authentication/Refresh:
+        post:
+            summary: Refresh tokens
+            description: Refreshes access and refresh tokens using the existing refresh token.
+            tags:
+                - Authentication
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RefreshTokenRequest"
+            responses:
+                "200":
+                    description: Tokens refreshed successfully.
+                "401":
+                    description: Unauthorized - invalid or expired refresh token.
+
+    /api/Accounts/Me:
+        get:
+            summary: Get current user information
+            description: Retrieves information about the authenticated user.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: Information about the authenticated user.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserResponse"
+                "401":
+                    description: Unauthorized - user not logged in.
+
+    /api/Accounts/Update:
+        put:
+            summary: Update current user data
+            description: Allows the authenticated user to update their own information.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserUpdate"
+            responses:
+                "200":
+                    description: User data updated successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized - user not logged in.
+
+    /api/Accounts:
+        get:
+            summary: Get all accounts
+            description: Allows an admin to retrieve a list of all user accounts with pagination.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: from
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Offset for pagination.
+                - name: count
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Number of accounts to retrieve.
+            responses:
+                "200":
+                    description: A list of user accounts.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/UserResponse"
+                "401":
+                    description: Unauthorized - admin access required.
+
+        post:
+            summary: Create a new account
+            description: Allows an admin to create a new user account.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserCreate"
+            responses:
+                "200":
+                    description: Account created successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized - admin access required.
+
+    /api/Accounts/{id}:
+        put:
+            summary: Update user account by ID
+            description: Allows an admin to update a specific user's information.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the user to update.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UserUpdate"
+            responses:
+                "200":
+                    description: User account updated successfully.
+                "400":
+                    description: Invalid input.
+                "401":
+                    description: Unauthorized - admin access required.
+
+        delete:
+            summary: Soft delete user account by ID
+            description: Allows an admin to soft delete a specific user account.
+            tags:
+                - Accounts
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the user to delete.
+            responses:
+                "200":
+                    description: User account deleted successfully.
+                "401":
+                    description: Unauthorized - admin access required.
+    /api/Doctors:
+        get:
+            summary: Get list of doctors
+            description: Retrieve a list of all doctors, optionally filtered by name, with pagination.
+            tags:
+                - Doctors
+            parameters:
+                - name: nameFilter
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Filter doctors by name.
+                - name: from
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Offset for pagination.
+                - name: count
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: Number of doctors to retrieve.
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: List of doctors retrieved successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/DoctorResponse"
+                "400":
+                    description: Invalid request.
+                "500":
+                    description: Server error.
+    /api/Doctors/{id}:
+        get:
+            summary: Get doctor information
+            description: Retrieve detailed information about a specific doctor by their ID.
+            tags:
+                - Doctors
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the doctor to retrieve.
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: Doctor information retrieved successfully.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/DoctorResponse"
+                "400":
+                    description: Invalid request.
+                "404":
+                    description: Doctor not found.
+                "500":
+                    description: Server error.
+
+    /api/Doctors/Exist:
+        get:
+            summary: Check if doctor exists
+            description: Check if a doctor exists in the system based on the doctor's ID.
+            tags:
+                - Doctors
+            security:
+                - cookieAuth: []
+            responses:
+                "200":
+                    description: Doctor exists.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ExistenceResponse"
+                "400":
+                    description: Invalid request.
+                "500":
+                    description: Server error.
+components:
+    securitySchemes:
+        cookieAuth:
+            type: apiKey
+            in: cookie
+            name: accessToken
+
+    schemas:
+        UserSignUp:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: Username for the account.
+                password:
+                    type: string
+                    description: Password for the account.
+                firstName:
+                    type: string
+                    description: First name of the user.
+                lastName:
+                    type: string
+                    description: Last name of the user.
+
+        UserSignIn:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: Username for the account.
+                password:
+                    type: string
+                    description: Password for the account.
+
+        RefreshTokenRequest:
+            type: object
+            properties:
+                refreshToken:
+                    type: string
+                    description: The refresh token to use for generating a new access token.
+
+        UserResponse:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: ID of the user.
+                username:
+                    type: string
+                    description: Username of the user.
+                firstName:
+                    type: string
+                    description: First name of the user.
+                lastName:
+                    type: string
+                    description: Last name of the user.
+                roles:
+                    type: array
+                    items:
+                        type: string
+                    description: List of roles assigned to the user.
+
+        UserUpdate:
+            type: object
+            properties:
+                firstName:
+                    type: string
+                    description: First name of the user.
+                lastName:
+                    type: string
+                    description: Last name of the user.
+                password:
+                    type: string
+                    description: New password for the account.
+
+        UserCreate:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: Username for the new account.
+                password:
+                    type: string
+                    description: Password for the new account.
+                roles:
+                    type: array
+                    items:
+                        type: string
+                    description: Roles to assign to the new user account.
+
+        DoctorResponse:
+            type: object
+            properties:
+                fullName:
+                    type: string
+                    description: Full name of the doctor.
+
+        ExistenceResponse:
+            type: object
+            properties:
+                exists:
+                    type: boolean
+                    description: Indicates whether the doctor exists in the system.

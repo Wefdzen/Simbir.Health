@@ -108,7 +108,7 @@ func ValidateToken() gin.HandlerFunc {
 				return
 			} else {
 				//accessToken прокатил
-				c.JSON(http.StatusOK, gin.H{"status": ""})
+				c.JSON(http.StatusOK, gin.H{"status": "validate success"})
 				return
 			}
 		} else {
