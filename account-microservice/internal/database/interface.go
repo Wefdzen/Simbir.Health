@@ -1,7 +1,7 @@
 package database
 
 type UserRepository interface {
-	AddNewUser(user *User)
+	AddNewUser(user *User, role []string)
 	CheckPasswordUser(user *User) bool
 	GetIDByUserName(user *User) uint
 	GetRefreshTokenUser(idUser string) string
@@ -19,8 +19,8 @@ type UserRepository interface {
 }
 
 // registration a new user in db by default role with "user"
-func RegisterUser(repo UserRepository, user *User) {
-	repo.AddNewUser(user)
+func RegisterUser(repo UserRepository, user *User, role []string) {
+	repo.AddNewUser(user, role)
 }
 
 func CheckPassword(repo UserRepository, user *User) bool {

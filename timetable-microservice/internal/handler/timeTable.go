@@ -83,7 +83,6 @@ func UpdateRecordInTimetable() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		// TODO Нельзя изменить если есть записавшиеся на прием
 
 		//Checking paramaters time in body from req
 		service.CheckMultiplyOfTime(jsonInput.From, jsonInput.To, c)

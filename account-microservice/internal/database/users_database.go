@@ -20,9 +20,9 @@ func NewGormUserRepository() *GormUserRepository {
 	return &GormUserRepository{db: db}
 }
 
-func (r *GormUserRepository) AddNewUser(user *User) {
-	var rolesToNewUser []string
-	rolesToNewUser = append(rolesToNewUser, "user")
+func (r *GormUserRepository) AddNewUser(user *User, role []string) {
+	rolesToNewUser := role
+	//rolesToNewUser = append(rolesToNewUser, "user")
 	r.db.Create(&User{LastName: user.LastName, FirstName: user.FirstName, UserName: user.UserName, Password: user.Password, Roles: rolesToNewUser, RefreshToken: ""})
 }
 

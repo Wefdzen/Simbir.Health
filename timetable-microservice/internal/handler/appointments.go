@@ -11,22 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// func GetFreeAppointments() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		idTimetable := c.Param("id")
-
-// 		userRepo := database.NewGormUserRepository()
-// 		allAppoint := database.GetFreeAppointmentsById(userRepo, idTimetable)
-// 		if allAppoint.HospitalId == 0 { // значит нет такого расписания
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		//TODO сделать тупо все все типо талоны массивом и потом отсортировать что занято и только тогда отправить
-// 		c.JSON(http.StatusOK, allAppoint)
-// 		//TODO сортировка уже занятых чтобы небыло
-
-//		}
-//	}
 func GetFreeAppointments() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idTimetable := c.Param("id")
@@ -58,7 +42,7 @@ func RecordingToAppointment() gin.HandlerFunc {
 		}
 
 		layout := "2006-01-02T15:04:05Z07:00"
-		time, err := time.Parse(layout, jsonInput.Time) //TODO проверить кратность и промежуток входит ли вообще
+		time, err := time.Parse(layout, jsonInput.Time)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -85,7 +69,6 @@ func RecordingToAppointment() gin.HandlerFunc {
 		}
 
 		userRepo := database.NewGormUserRepository()
-		//TODOПроврека наличия на это время
 		statusOfTime := database.CheckAvailibleOfTimeInTimetableByTime(userRepo, time)
 		if !statusOfTime {
 			// если время занято

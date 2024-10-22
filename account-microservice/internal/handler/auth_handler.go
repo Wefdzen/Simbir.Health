@@ -24,7 +24,7 @@ func SignUp() gin.HandlerFunc {
 
 		//connect to db
 		userRepo := database.NewGormUserRepository()
-		database.RegisterUser(userRepo, &jsonInput)
+		database.RegisterUser(userRepo, &jsonInput, []string{"user"}) //по умолчани/ все будут user
 
 		c.JSON(http.StatusOK, gin.H{
 			"status": "registration a new user success",

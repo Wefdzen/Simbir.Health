@@ -27,7 +27,6 @@ func SetupRouter() *gin.Engine {
 		userAuth.POST("/Refresh", handler.Refresh())
 
 	}
-	//TODO role amind authoriz middleware
 	userAccounts := r.Group("/api/Accounts")
 	userAccounts.Use(middleware.Authentication())
 	{

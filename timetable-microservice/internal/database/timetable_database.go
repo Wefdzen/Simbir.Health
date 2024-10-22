@@ -23,7 +23,6 @@ func (r *GormUserRepository) CreateNewTimetableForDoctor(newTimetable *Timetable
 	r.db.Create(&Timetable{HospitalId: newTimetable.HospitalId, DoctorId: newTimetable.DoctorId, From: newTimetable.From, To: newTimetable.To, Room: newTimetable.Room})
 }
 
-// TODO Нельзя изменить если есть записавшиеся на прием
 func (r *GormUserRepository) UpdateDataInTimetable(idTimetable string, newTimetable Timetable) {
 	updates := map[string]interface{}{"hospital_id": newTimetable.HospitalId, "doctor_id": newTimetable.DoctorId, "from": newTimetable.From, "to": newTimetable.To, "room": newTimetable.Room}
 	r.db.Model(&Timetable{}).Where("id = ?", idTimetable).Updates(updates)
