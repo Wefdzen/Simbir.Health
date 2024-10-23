@@ -21,20 +21,22 @@ func GetHistoryOfVisits() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
+
 		roles := service.Authorization(c)
 		pacientId, err := strconv.Atoi(idPacient)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+
 		if idUser != pacientId && !strings.Contains(roles, "user") {
 			//проверка doctor
 			if !strings.Contains(roles, "doctor") {
-				c.AbortWithStatus(http.StatusUnauthorized)
-				fmt.Println("here error")
+				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
 		} //good
+
 		userRepo := database.NewGormUserRepository()
 		result := database.GetListHistoryByIdPacient(userRepo, idPacient)
 		c.JSON(http.StatusOK, result)
@@ -64,7 +66,6 @@ func GetHistory() gin.HandlerFunc {
 			//проверка doctor
 			if !strings.Contains(roles, "doctor") {
 				c.AbortWithStatus(http.StatusUnauthorized)
-				fmt.Println("here error")
 				return
 			}
 		}
@@ -90,8 +91,7 @@ func CreateNewHistoryVisit() gin.HandlerFunc {
 		if idUser != jsonInput.PacientId && !strings.Contains(roles, "user") {
 			//проверка на admin, manager, doctor
 			if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") && !strings.Contains(roles, "doctor") {
-				c.AbortWithStatus(http.StatusUnauthorized)
-				fmt.Println("here error")
+				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
 
@@ -100,14 +100,11 @@ func CreateNewHistoryVisit() gin.HandlerFunc {
 		doctorId := strconv.Itoa(jsonInput.DoctorId)
 		if ok, _ := service.CheckExistDoctor(doctorId, c); !ok {
 			c.AbortWithStatus(http.StatusBadRequest)
-			fmt.Println("here 2")
 			return
 		}
 		hospitalId := strconv.Itoa(jsonInput.HospitalId)
-		fmt.Println(hospitalId)
 		if ok, _ := service.CheckExistRoomInHospital(jsonInput.Room, hospitalId, c); !ok {
 			c.AbortWithStatus(http.StatusBadRequest)
-			fmt.Println("here 3")
 			return
 		}
 		//create a new history
@@ -124,7 +121,6 @@ func UpdateNewHistoryVisit() gin.HandlerFunc {
 		idHistory := c.Param("id")
 		var jsonInput database.History
 		if err := c.BindJSON(&jsonInput); err != nil {
-			fmt.Println("here 1")
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 
@@ -138,8 +134,7 @@ func UpdateNewHistoryVisit() gin.HandlerFunc {
 		if idUser != jsonInput.PacientId && !strings.Contains(roles, "user") {
 			//проверка на admin, manager, doctor
 			if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") && !strings.Contains(roles, "doctor") {
-				c.AbortWithStatus(http.StatusUnauthorized)
-				fmt.Println("here error")
+				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
 
@@ -148,14 +143,12 @@ func UpdateNewHistoryVisit() gin.HandlerFunc {
 		doctorId := strconv.Itoa(jsonInput.DoctorId)
 		if ok, _ := service.CheckExistDoctor(doctorId, c); !ok {
 			c.AbortWithStatus(http.StatusBadRequest)
-			fmt.Println("here 2")
 			return
 		}
 		hospitalId := strconv.Itoa(jsonInput.HospitalId)
 		fmt.Println(hospitalId)
 		if ok, _ := service.CheckExistRoomInHospital(jsonInput.Room, hospitalId, c); !ok {
 			c.AbortWithStatus(http.StatusBadRequest)
-			fmt.Println("here 3")
 			return
 		}
 		//create a new history

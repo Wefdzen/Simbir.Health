@@ -14,6 +14,10 @@ import (
 func GetFreeAppointments() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idTimetable := c.Param("id")
+		if _, err := strconv.Atoi(idTimetable); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		// Получить расписание по ID
 		userRepo := database.NewGormUserRepository()
@@ -35,6 +39,10 @@ func GetFreeAppointments() gin.HandlerFunc {
 func RecordingToAppointment() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idTimetable := c.Param("id")
+		if _, err := strconv.Atoi(idTimetable); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		var jsonInput database.RequestAppointmentByTime
 		if err := c.BindJSON(&jsonInput); err != nil {
@@ -85,6 +93,10 @@ func RecordingToAppointment() gin.HandlerFunc {
 func CancelingAppointment() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idAppointment := c.Param("id")
+		if _, err := strconv.Atoi(idAppointment); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 		//for admin, manager and how create a appointment
 		idClient := service.GetIdOfUserByJWT(c)
 
@@ -94,7 +106,7 @@ func CancelingAppointment() gin.HandlerFunc {
 			//если с user не прокатило то чекаем уже роли
 			roles := service.Authorization(c)
 			if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-				c.AbortWithStatus(http.StatusUnauthorized)
+				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
 		} //all good access success to delete

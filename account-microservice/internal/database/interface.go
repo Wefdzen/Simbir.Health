@@ -12,7 +12,7 @@ type UserRepository interface {
 	GetAllInfoAllAccountsAdmin(from, count int) []User
 	CreateAccountByAdmin(user *User)
 	UpdateDataAccountByAdmin(idUser string, user User)
-	SoftDeleteAccountByAdmin(idUser string)
+	SoftDeleteAccountByAdmin(idUser string) error
 	GetFullNameHowIsDoctors(from, count int, nameFilter string) []User
 	GetInfoByIDDoctor(idUser string) User
 	CheckExistDoctorByID(idDoctor string) bool
@@ -61,8 +61,8 @@ func NewAccountByAdmin(repo UserRepository, user *User) {
 func UpdateDataAccountAdmin(repo UserRepository, idUser string, user User) {
 	repo.UpdateDataAccountByAdmin(idUser, user)
 }
-func SoftDeleteAccountAdmin(repo UserRepository, idUser string) {
-	repo.SoftDeleteAccountByAdmin(idUser)
+func SoftDeleteAccountAdmin(repo UserRepository, idUser string) error {
+	return repo.SoftDeleteAccountByAdmin(idUser)
 }
 
 func GetFullNameHowDoctors(repo UserRepository, from, count int, nameFilter string) []User {

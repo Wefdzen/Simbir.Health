@@ -84,8 +84,8 @@ func (r *GormUserRepository) UpdateDataAccountByAdmin(idUser string, user User) 
 	r.db.Model(&User{}).Where("id = ?", idUser).Updates(updates)
 }
 
-func (r *GormUserRepository) SoftDeleteAccountByAdmin(idUser string) {
-	r.db.Where("id = ?", idUser).Delete(&User{})
+func (r *GormUserRepository) SoftDeleteAccountByAdmin(idUser string) error {
+	return r.db.Where("id = ?", idUser).Delete(&User{}).Error
 }
 
 func (r *GormUserRepository) GetFullNameHowIsDoctors(from, count int, nameFilter string) []User {

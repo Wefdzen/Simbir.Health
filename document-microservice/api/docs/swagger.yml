@@ -36,6 +36,8 @@ paths:
                     description: Invalid ID supplied.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not doctor, user with this id.
 
     /api/History/{id}:
         get:
@@ -63,6 +65,8 @@ paths:
                     description: Invalid ID supplied.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not doctor, user with this id.
 
         put:
             summary: Update an existing History entry
@@ -83,7 +87,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/History"
+                            $ref: "#/components/schemas/CreateHistory"
             responses:
                 "200":
                     description: History entry updated successfully.
@@ -99,6 +103,8 @@ paths:
                     description: Invalid input.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin, manager, doctor and pacientId with role user.
 
     /api/History:
         post:
@@ -113,7 +119,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/History"
+                            $ref: "#/components/schemas/CreateHistory"
             responses:
                 "200":
                     description: History entry created successfully.
@@ -129,6 +135,8 @@ paths:
                     description: Invalid input.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin, manager, doctor and pacientId with role user.
 
 components:
     securitySchemes:
@@ -146,7 +154,34 @@ components:
                     example: 1
                 date:
                     type: string
-                    format: date-time
+                    example: 2024-04-27T09:00:00Z
+                    description: Date of the visit.
+                pacientId:
+                    type: integer
+                    description: ID of the patient.
+                    example: 123
+                hospitalId:
+                    type: integer
+                    description: ID of the hospital.
+                    example: 45
+                doctorId:
+                    type: integer
+                    description: ID of the doctor.
+                    example: 67
+                room:
+                    type: string
+                    description: Room number or name.
+                    example: "Room 101"
+                data:
+                    type: string
+                    description: Additional data related to the visit.
+                    example: "Patient diagnosed with flu."
+        CreateHistory:
+            type: object
+            properties:
+                date:
+                    type: string
+                    example: 2024-04-27T09:00:00Z
                     description: Date of the visit.
                 pacientId:
                     type: integer

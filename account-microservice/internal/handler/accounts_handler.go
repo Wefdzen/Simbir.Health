@@ -50,14 +50,28 @@ func GetAllAccounts() gin.HandlerFunc {
 		//only for admin
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 		//get data form query
 		from := c.Query("from")
+		if from == "" {
+			from = "0" // будет по умолчанию с самого начала
+		}
 		count := c.Query("count")
-		fromI, _ := strconv.Atoi(from)
-		countI, _ := strconv.Atoi(count)
+		if count == "" {
+			count = "10" // 10 записей
+		}
+		fromI, err := strconv.Atoi(from)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		countI, err := strconv.Atoi(count)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		userRepo := database.NewGormUserRepository()
 		allUsers := database.GetAllInfoAllAccounts(userRepo, fromI, countI)
@@ -70,7 +84,7 @@ func CreateAccount() gin.HandlerFunc {
 		//only for admin
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
@@ -96,7 +110,7 @@ func UpdateDataByAdmin() gin.HandlerFunc {
 		//only for admin
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
@@ -118,13 +132,20 @@ func DeleteAccount() gin.HandlerFunc {
 		//only for admin
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 		//Get ID for soft delete
 		idUser := c.Param("id")
 		userRepo := database.NewGormUserRepository()
-		database.SoftDeleteAccountAdmin(userRepo, idUser)
+
+		//если ошибка по айди не нашел то NotFound
+		err := database.SoftDeleteAccountAdmin(userRepo, idUser)
+		if err != nil {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+		//delete success
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})

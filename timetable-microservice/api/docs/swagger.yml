@@ -11,7 +11,7 @@ paths:
     /api/Timetable:
         post:
             summary: Create a new timetable record
-            description: Creates a new timetable record for a doctor.
+            description: Creates a new timetable record for a doctor. Condition from < to 12 hours.
             tags:
                 - Timetable
             security:
@@ -21,7 +21,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/Timetable"
+                            $ref: "#/components/schemas/CreateTimetable"
             responses:
                 "200":
                     description: Timetable record created successfully.
@@ -29,6 +29,8 @@ paths:
                     description: Invalid input.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin or manager.
 
     /api/Timetable/{id}:
         put:
@@ -50,7 +52,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/Timetable"
+                            $ref: "#/components/schemas/CreateTimetable"
             responses:
                 "200":
                     description: Timetable record updated successfully.
@@ -58,6 +60,8 @@ paths:
                     description: Invalid input or timetable has appointments.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin or manager.
 
         delete:
             summary: Delete a timetable record
@@ -78,6 +82,8 @@ paths:
                     description: Timetable record deleted successfully.
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin or manager.
 
     /api/Timetable/Doctor/{id}:
         get:
@@ -97,20 +103,26 @@ paths:
                   required: true
                   schema:
                       type: string
-                      format: date-time
+                      example: 2024-04-27T09:00:00Z
                   description: Start date-time of the query period.
                 - name: to
                   in: query
                   required: true
                   schema:
                       type: string
-                      format: date-time
+                      example: 2024-04-27T21:00:00Z
                   description: End date-time of the query period.
             responses:
                 "200":
                     description: Successful response with the doctor's timetable.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Timetable"
                 "400":
-                    description: Invalid date format.
+                    description: Invalid date format or id.
                 "401":
                     description: Unauthorized.
 
@@ -131,8 +143,12 @@ paths:
             responses:
                 "200":
                     description: Timetable records for doctor deleted successfully.
+                "400":
+                    description: invalid input id
                 "401":
                     description: Unauthorized.
+                "403":
+                    description: You are not admin or manager.
 
     /api/Timetable/Hospital/{id}:
         get:
@@ -152,20 +168,26 @@ paths:
                   required: true
                   schema:
                       type: string
-                      format: date-time
+                      example: 2024-04-27T09:00:00Z
                   description: Start date-time of the query period.
                 - name: to
                   in: query
                   required: true
                   schema:
                       type: string
-                      format: date-time
+                      example: 2024-04-27T21:00:00Z
                   description: End date-time of the query period.
             responses:
                 "200":
                     description: Successful response with the hospital's timetable.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Timetable"
                 "400":
-                    description: Invalid date format.
+                    description: Invalid date format or id.
                 "401":
                     description: Unauthorized.
 
@@ -186,9 +208,128 @@ paths:
             responses:
                 "200":
                     description: Timetable records for hospital deleted successfully.
+                "400":
+                    description: Invalid input id.
                 "401":
                     description: Unauthorized.
-
+                "403":
+                    description: You are not admin or manager.
+    /api/Timetable/Hospital/{id}/Room/{room}:
+        get:
+            summary: Get timetable by id of Hospital and room of Hospital
+            description: Get timetable by id of Hospital and room of Hospital
+            tags:
+                - Timetable
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the hospital.
+                - name: room
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The room in the hospitalId.
+            responses:
+                "200":
+                    description: Timetable records in hospitalId and room.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Timetable"
+                "400":
+                    description: Invalid input id.
+                "401":
+                    description: Unauthorized.
+                "403":
+                    description: You are not admin or manager or doctor.
+    /api/Timetable/{id}/Appointments:
+        get:
+            summary: Get all free appointments
+            description: Get all free appointments
+            tags:
+                - Appointments
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the timetable.
+            responses:
+                "200":
+                    description: all free ticket.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                                    example: 2024-04-27T19:30:00Z, 2024-04-27T20:00:00Z, 2024-04-27T20:30:00Z
+                "400":
+                    description: Invalid input id.
+                "401":
+                    description: Unauthorized.
+        post:
+            summary: Borrow a ticket
+            description: Borrow a ticket in Timetable.
+            tags:
+                - Appointments
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the timetable.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/BorrowAppointment"
+            responses:
+                "200":
+                    description: Borrow a ticket in Timetable success.
+                "400":
+                    description: Invalid input id.
+                "401":
+                    description: Unauthorized.
+    /api/Appointment/{id}:
+        delete:
+            summary: Delete a ticket
+            description: Delete a ticket in Timetable.
+            tags:
+                - Appointments
+            security:
+                - cookieAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                  description: The ID of the appointment.
+            responses:
+                "200":
+                    description: Delete a ticket in Timetable success.
+                "400":
+                    description: Invalid input id.
+                "401":
+                    description: Unauthorized.
+                "403":
+                    description: You are not admin, manager, recording user.
 components:
     securitySchemes:
         cookieAuth:
@@ -199,41 +340,52 @@ components:
         Timetable:
             type: object
             properties:
-                ID:
+                id:
                     type: integer
-                    description: Unique identifier for the timetable entry.
-                HospitalId:
+                    description: ID of timetable.
+                hospitalId:
                     type: integer
                     description: ID of the hospital.
-                DoctorId:
+                doctorId:
                     type: integer
                     description: ID of the doctor.
-                From:
+                from:
                     type: string
-                    format: date-time
+                    example: 2024-04-27T19:00:00Z
                     description: Start time of the timetable entry.
-                To:
+                to:
                     type: string
-                    format: date-time
+                    example: 2024-04-27T21:00:00Z
                     description: End time of the timetable entry.
-                Room:
+                room:
                     type: string
                     description: Room in which the timetable is scheduled.
-        Appointment:
+        CreateTimetable:
             type: object
             properties:
-                ID:
+                hospitalId:
                     type: integer
-                    description: Unique identifier for the appointment.
-                TimetableId:
+                    description: ID of the hospital.
+                doctorId:
                     type: integer
-                    description: ID of the related timetable entry.
-                ClientId:
-                    type: integer
-                    description: ID of the client who made the appointment.
-                Time:
+                    description: ID of the doctor.
+                from:
                     type: string
-                    format: date-time
+                    example: 2024-04-27T19:00:00Z
+                    description: Start time of the timetable entry.
+                to:
+                    type: string
+                    example: 2024-04-27T21:00:00Z
+                    description: End time of the timetable entry.
+                room:
+                    type: string
+                    description: Room in which the timetable is scheduled.
+        BorrowAppointment:
+            type: object
+            properties:
+                time:
+                    type: string
+                    example: 2024-04-27T21:00:00Z
                     description: Scheduled time of the appointment.
 security:
     - cookieAuth: []

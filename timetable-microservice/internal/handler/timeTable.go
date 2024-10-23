@@ -17,11 +17,9 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 		//only for admin or manager
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			fmt.Println("here error")
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
-		fmt.Println("дошло до сюда 1")
 		//get data from request
 		var jsonInput database.Timetable
 		if err := c.BindJSON(&jsonInput); err != nil {
@@ -33,17 +31,23 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		fmt.Println("дошло до сюда 2")
 		existRoomInHospital, err := service.CheckExistRoomInHospital(jsonInput.Room, strconv.Itoa(jsonInput.HospitalId), c)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		fmt.Println("дошло до сюда 3")
 
 		//Checking paramaters time in body from req
-		service.CheckMultiplyOfTime(jsonInput.From, jsonInput.To, c)
-		service.CheckTimeDifference(jsonInput.From, jsonInput.To, c)
+		ans := service.CheckMultiplyOfTime(jsonInput.From, jsonInput.To, c)
+		if !ans {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		ans = service.CheckTimeDifference(jsonInput.From, jsonInput.To)
+		if !ans {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		if existDoctor && existRoomInHospital { // если все прошло хорошо будет создано новое расписание
 			userRepo := database.NewGormUserRepository()
@@ -51,7 +55,6 @@ func CreateRecordInTimetable() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusOK) //mb change
 			return
 		}
-		fmt.Println("дошло до сюда 3")
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 }
@@ -60,11 +63,16 @@ func UpdateRecordInTimetable() gin.HandlerFunc {
 		//only for admin or manager
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
 		idTimetable := c.Param("id")
+		_, err := strconv.Atoi(idTimetable)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		//get data from request
 		var jsonInput database.Timetable
@@ -86,7 +94,10 @@ func UpdateRecordInTimetable() gin.HandlerFunc {
 
 		//Checking paramaters time in body from req
 		service.CheckMultiplyOfTime(jsonInput.From, jsonInput.To, c)
-		service.CheckTimeDifference(jsonInput.From, jsonInput.To, c)
+		if ans := service.CheckTimeDifference(jsonInput.From, jsonInput.To); !ans {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		if existDoctor && existRoomInHospital { // если все прошло хорошо будет обновленое расписание
 			userRepo := database.NewGormUserRepository()
@@ -103,11 +114,16 @@ func DeleteRecordFromTimetable() gin.HandlerFunc {
 		//only for admin or manager
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
 		idTimetable := c.Param("id")
+		_, err := strconv.Atoi(idTimetable)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		userRepo := database.NewGormUserRepository()
 		database.DeleteTimetableByID(userRepo, idTimetable)
@@ -120,10 +136,16 @@ func DeleteTimetableForDoctor() gin.HandlerFunc {
 		//only for admin or manager
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 		idDoctor := c.Param("id")
+		_, err := strconv.Atoi(idDoctor)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
 		userRepo := database.NewGormUserRepository()
 		database.DeleteTimetableForDoctorByID(userRepo, idDoctor)
 		c.AbortWithStatus(http.StatusOK) //mb change
@@ -135,10 +157,16 @@ func DeleteTimetableForHospital() gin.HandlerFunc {
 		//only for admin or manager
 		roles := service.Authorization(c)
 		if !strings.Contains(roles, "admin") && !strings.Contains(roles, "manager") {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 		idHospital := c.Param("id")
+		_, err := strconv.Atoi(idHospital)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
 		userRepo := database.NewGormUserRepository()
 		database.DeleteTimetableForHospitalByID(userRepo, idHospital)
 		c.AbortWithStatus(http.StatusOK) //mb change
@@ -148,6 +176,11 @@ func DeleteTimetableForHospital() gin.HandlerFunc {
 func GetTimetableByIdHospital() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idHospital := c.Param("id")
+		_, err := strconv.Atoi(idHospital)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		//get data form query
 		from := c.Query("from")
@@ -155,13 +188,11 @@ func GetTimetableByIdHospital() gin.HandlerFunc {
 		layout := "2006-01-02T15:04:05Z07:00"
 		fromTime, err := time.Parse(layout, from)
 		if err != nil {
-			fmt.Println("error 1", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		toTime, err := time.Parse(layout, to)
 		if err != nil {
-			fmt.Println("error 2", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -175,6 +206,11 @@ func GetTimetableByIdHospital() gin.HandlerFunc {
 func GetTimetableByIdDoctor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idDoctor := c.Param("id")
+		_, err := strconv.Atoi(idDoctor)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		//get data form query
 		from := c.Query("from")
@@ -208,6 +244,11 @@ func GetTimetableInHospitalRoom() gin.HandlerFunc {
 		}
 
 		idHospital := c.Param("id")
+		if _, err := strconv.Atoi(idHospital); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
 		room := c.Param("room")
 
 		//get data form query
@@ -216,13 +257,11 @@ func GetTimetableInHospitalRoom() gin.HandlerFunc {
 		layout := "2006-01-02T15:04:05Z07:00"
 		fromTime, err := time.Parse(layout, from)
 		if err != nil {
-			fmt.Println("error 1", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		toTime, err := time.Parse(layout, to)
 		if err != nil {
-			fmt.Println("error 2", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}

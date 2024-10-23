@@ -64,8 +64,6 @@ paths:
             description: Validates the access token to check its status.
             tags:
                 - Authentication
-            security:
-                - cookieAuth: []
             responses:
                 "200":
                     description: Token is valid.
@@ -74,8 +72,8 @@ paths:
 
     /api/Authentication/Refresh:
         post:
-            summary: Refresh tokens
-            description: Refreshes access and refresh tokens using the existing refresh token.
+            summary: Refresh tokens, validate ref token => update ref and access tokens
+            description: Refreshes access and refresh tokens using the existing refresh token. If refreshToken will be empty => default ref token will be get from cookie refreshToken.
             tags:
                 - Authentication
             requestBody:
@@ -86,7 +84,7 @@ paths:
                             $ref: "#/components/schemas/RefreshTokenRequest"
             responses:
                 "200":
-                    description: Tokens refreshed successfully.
+                    description: Tokens refreshed successfully. Update ref and access token.
                 "401":
                     description: Unauthorized - invalid or expired refresh token.
 
@@ -121,7 +119,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/UserUpdate"
+                            $ref: "#/components/schemas/UserUpdateNamePassword"
             responses:
                 "200":
                     description: User data updated successfully.
@@ -144,13 +142,13 @@ paths:
                   required: false
                   schema:
                       type: integer
-                  description: Offset for pagination.
+                  description: Offset for pagination. If this field will be empty => from = 0(будут записи с первой by default)
                 - name: count
                   in: query
                   required: false
                   schema:
                       type: integer
-                  description: Number of accounts to retrieve.
+                  description: Number of accounts to retrieve. If this field will be empty => count = 10 (10 записей)
             responses:
                 "200":
                     description: A list of user accounts.
@@ -160,7 +158,11 @@ paths:
                                 type: array
                                 items:
                                     $ref: "#/components/schemas/UserResponse"
+                "400":
+                    description: from or count not integer
                 "401":
+                    description: Unauthorized - user not logged in.
+                "403":
                     description: Unauthorized - admin access required.
 
         post:
@@ -182,6 +184,8 @@ paths:
                 "400":
                     description: Invalid input.
                 "401":
+                    description: Unauthorized - user not logged in.
+                "403":
                     description: Unauthorized - admin access required.
 
     /api/Accounts/{id}:
@@ -211,6 +215,8 @@ paths:
                 "400":
                     description: Invalid input.
                 "401":
+                    description: Unauthorized - user not logged in.
+                "403":
                     description: Unauthorized - admin access required.
 
         delete:
@@ -231,7 +237,11 @@ paths:
                 "200":
                     description: User account deleted successfully.
                 "401":
+                    description: Unauthorized - user not logged in.
+                "403":
                     description: Unauthorized - admin access required.
+                "404":
+                    description: Id user not exist.
     /api/Doctors:
         get:
             summary: Get list of doctors
@@ -244,7 +254,7 @@ paths:
                   required: false
                   schema:
                       type: string
-                  description: Filter doctors by name.
+                  description: Filter doctors by name. If this field will be empty => count = 0 (с первой записи)
                 - name: from
                   in: query
                   required: false
@@ -256,7 +266,7 @@ paths:
                   required: false
                   schema:
                       type: integer
-                  description: Number of doctors to retrieve.
+                  description: Number of doctors to retrieve. If this field will be empty => count = 10 (10 записей)
             security:
                 - cookieAuth: []
             responses:
@@ -269,9 +279,12 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/DoctorResponse"
                 "400":
-                    description: Invalid request.
-                "500":
-                    description: Server error.
+                    description: Invalid input number.
+                "401":
+                    description: Unauthorized - user not logged in.
+                "404":
+                    description: Doctor with this nameFilter not found.
+
     /api/Doctors/{id}:
         get:
             summary: Get doctor information
@@ -294,12 +307,10 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/DoctorResponse"
-                "400":
-                    description: Invalid request.
+                "401":
+                    description: Unauthorized - user not logged in.
                 "404":
-                    description: Doctor not found.
-                "500":
-                    description: Server error.
+                    description: Doctor with this nameFilter not found.
 
     /api/Doctors/Exist:
         get:
@@ -312,14 +323,10 @@ paths:
             responses:
                 "200":
                     description: Doctor exists.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ExistenceResponse"
+
                 "400":
                     description: Invalid request.
-                "500":
-                    description: Server error.
+
 components:
     securitySchemes:
         cookieAuth:
@@ -391,6 +398,26 @@ components:
                 lastName:
                     type: string
                     description: Last name of the user.
+                username:
+                    type: string
+                    description: Username for the new account.
+                password:
+                    type: string
+                    description: New password for the account.
+                roles:
+                    type: array
+                    items:
+                        type: string
+                    description: Roles to assign to the new user account.
+        UserUpdateNamePassword:
+            type: object
+            properties:
+                firstName:
+                    type: string
+                    description: First name of the user.
+                lastName:
+                    type: string
+                    description: Last name of the user.
                 password:
                     type: string
                     description: New password for the account.
@@ -398,6 +425,12 @@ components:
         UserCreate:
             type: object
             properties:
+                firstName:
+                    type: string
+                    description: First name of the user.
+                lastName:
+                    type: string
+                    description: Last name of the user.
                 username:
                     type: string
                     description: Username for the new account.
@@ -416,10 +449,3 @@ components:
                 fullName:
                     type: string
                     description: Full name of the doctor.
-
-        ExistenceResponse:
-            type: object
-            properties:
-                exists:
-                    type: boolean
-                    description: Indicates whether the doctor exists in the system.

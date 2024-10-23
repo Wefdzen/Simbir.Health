@@ -34,7 +34,7 @@ func CheckMultiplyOfTimeOne(time time.Time, c *gin.Context) {
 	}
 }
 
-func CheckTimeDifference(timeFrom, timeTo time.Time, c *gin.Context) bool {
+func CheckTimeDifference(timeFrom, timeTo time.Time) bool {
 	duration := timeTo.Sub(timeFrom)
 	// Проверяем, что время "to" больше "from"
 	if duration <= 0 {
